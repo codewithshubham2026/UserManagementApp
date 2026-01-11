@@ -12,7 +12,13 @@ const app = express();
 env.ensureEnv();
 
 // Basic security/quality middleware setup.
-app.use(cors({ origin: env.clientOrigin }));
+app.use(cors({
+  origin: env.clientOrigin,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type'],
+  optionsSuccessStatus: 204
+}));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {

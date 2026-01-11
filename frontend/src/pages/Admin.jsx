@@ -50,9 +50,9 @@ export default function Admin() {
     setActionSuccess('');
     setActionUserId(u.id);
     const nextRole = u.role === 'admin' ? 'user' : 'admin';
+    const userId = String(u.id).trim();
     
     try {
-      const userId = String(u.id).trim();
       console.log('Updating role:', { userId, userIdType: typeof userId, currentRole: u.role, nextRole });
       
       const { data } = await api.patch(`/api/users/${userId}/role`, { role: nextRole });
