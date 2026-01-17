@@ -7,10 +7,10 @@ function validateRequest(req, res, next) {
     console.error('Validation errors:', errors.array());
     console.error('Request params:', req.params);
     console.error('Request body:', req.body);
-    return res.status(400).json({ 
-      success: false, 
+    return res.status(400).json({
+      success: false,
       message: errors.array()[0]?.msg || 'Validation failed',
-      errors: errors.array() 
+      errors: errors.array()
     });
   }
   next();

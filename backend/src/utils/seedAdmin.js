@@ -8,7 +8,6 @@ async function seedAdmin() {
     const adminName = process.env.ADMIN_NAME || 'Admin User';
 
     const existingAdmin = await User.findOne({ email: adminEmail });
-    
     if (existingAdmin) {
       if (existingAdmin.role !== 'admin') {
         existingAdmin.role = 'admin';

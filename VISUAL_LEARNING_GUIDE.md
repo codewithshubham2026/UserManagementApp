@@ -6,100 +6,100 @@
 ## 1. System Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USER'S BROWSER                           │
-│                                                                   │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │                    React Application                      │  │
-│  │                    (Frontend - Port 5173)                 │  │
-│  │                                                            │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │  │
-│  │  │  Login   │  │ Dashboard │  │  Admin   │              │  │
-│  │  │  Page    │  │   Page    │  │   Page   │              │  │
-│  │  └──────────┘  └──────────┘  └──────────┘              │  │
-│  │                                                            │  │
-│  │  ┌──────────────────────────────────────────┐           │  │
-│  │  │         AuthContext (Global State)         │           │  │
-│  │  │  - user: { id, name, email, role }        │           │  │
-│  │  │  - token: "eyJhbGciOiJIUzI1NiIs..."       │           │  │
-│  │  └──────────────────────────────────────────┘           │  │
-│  │                                                            │  │
-│  │  ┌──────────────────────────────────────────┐           │  │
-│  │  │         API Client (Axios)                 │           │  │
-│  │  │  - baseURL: http://localhost:5000         │           │  │
-│  │  │  - Auto-adds Authorization header         │           │  │
-│  │  └──────────────────────────────────────────┘           │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└───────────────────────────┬───────────────────────────────────────┘
-                            │
-                            │ HTTP Requests (JSON)
-                            │ GET /api/users
-                            │ POST /api/auth/login
-                            │ Authorization: Bearer <token>
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    EXPRESS SERVER                                │
-│                    (Backend - Port 5000)                         │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    Middleware Stack                       │  │
-│  │  1. CORS (Allow frontend)                                 │  │
-│  │  2. express.json() (Parse JSON)                           │  │
-│  │  3. Routes                                                 │  │
-│  │  4. Error Handler                                          │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │  │
-│  │  Auth Routes │  │ User Routes  │  │  AI Routes   │         │  │
-│  │  /api/auth   │  │  /api/users  │  │  /api/ai     │         │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘         │  │
-│         │                  │                  │                 │  │
-│         ▼                  ▼                  ▼                 │  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │  │
-│  │ Controllers  │  │ Controllers  │  │ Controllers  │         │  │
-│  │ - register    │  │ - getAllUsers│  │ - ask         │         │  │
-│  │ - login       │  │ - changeRole │  │              │         │  │
-│  │ - me          │  │ - deleteUser │  │              │         │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘         │  │
-│         │                  │                  │                 │  │
-│         ▼                  ▼                  ▼                 │  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │  │
-│  │   Services   │  │   Services   │  │   Services   │         │  │
-│  │ - registerUser│  │ - listUsers  │  │ - askAi      │         │  │
-│  │ - loginUser  │  │ - updateRole │  │              │         │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘         │  │
-│         │                  │                  │                 │  │
-│         └──────────────────┴──────────────────┘                 │  │
-│                            │                                     │  │
-│                            ▼                                     │  │
-│                  ┌─────────────────┐                            │  │
-│                  │  User Model      │                            │  │
-│                  │  (Mongoose)      │                            │  │
-│                  └────────┬─────────┘                            │  │
-└───────────────────────────┼───────────────────────────────────────┘
-                            │
-                            │ Database Queries
-                            │ findOne(), create(), find()
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      MONGODB DATABASE                           │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    users Collection                       │  │
-│  │                                                            │  │
-│  │  {                                                         │  │
-│  │    _id: ObjectId("65abcde123456789"),                    │  │
-│  │    name: "John Doe",                                      │  │
-│  │    email: "john@example.com",                            │  │
-│  │    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye...",         │  │
-│  │    role: "admin",                                         │  │
-│  │    createdAt: ISODate("2024-01-09T10:30:00Z"),           │  │
-│  │    updatedAt: ISODate("2024-01-09T10:30:00Z")            │  │
-│  }                                                           │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              USER'S BROWSER                                  │
+│                                                                              │
+│    ┌─────────────────────────────────────────────────────────────────────┐   │
+│    │                    React Application                                │   │
+│    │                    (Frontend - Port 5173)                           │   │
+│    │                                                                     │   │
+│    │   ┌──────────┐   ┌──────────┐   ┌──────────┐                        │   │
+│    │   │  Login   │   │ Dashboard│   │  Admin   │                        │   │
+│    │   │  Page    │   │   Page   │   │   Page   │                        │   │
+│    │   └──────────┘   └──────────┘   └──────────┘                        │   │
+│    │                                                                     │   │
+│    │   ┌───────────────────────────────────────────────┐                 │   │
+│    │   │         AuthContext (Global State)            │                 │   │
+│    │   │   - user: { id, name, email, role }           │                 │   │
+│    │   │   - token: "eyJhbGciOiJIUzI1NiIs..."          │                 │   │
+│    │   └───────────────────────────────────────────────┘                 │   │
+│    │                                                                     │   │
+│    │   ┌───────────────────────────────────────────────┐                 │   │
+│    │   │         API Client (Axios)                    │                 │   │
+│    │   │   - baseURL: http://localhost:5000            │                 │   │
+│    │   │   - Auto-adds Authorization header            │                 │   │
+│    │   └───────────────────────────────────────────────┘                 │   │
+│    └─────────────────────────────────────────────────────────────────────┘   │
+└───────────────────────────────┬──────────────────────────────────────────────┘
+                                │
+                                │ HTTP Requests (JSON)
+                                │ GET /api/users
+                                │ POST /api/auth/login
+                                │ Authorization: Bearer <token>
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           EXPRESS SERVER                                     │
+│                           (Backend - Port 5000)                              │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐    │
+│   │                        Middleware Stack                             │    │
+│   │    1. CORS (Allow frontend)                                         │    │
+│   │    2. express.json() (Parse JSON)                                   │    │
+│   │    3. Routes                                                        │    │
+│   │    4. Error Handler                                                 │    │
+│   └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                       │
+│   │  Auth Routes │  │  User Routes │  │  AI Routes   │                       │
+│   │  /api/auth   │  │  /api/users  │  │  /api/ai     │                       │
+│   └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                       │
+│          │                 │                 │                               │
+│          ▼                 ▼                 ▼                               │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                       │
+│   │ Controllers  │  │ Controllers  │  │ Controllers  │                       │
+│   │ - register   │  │ - getAllUsers│  │ - ask        │                       │
+│   │ - login      │  │ - changeRole │  │              │                       │
+│   │ - me         │  │ - deleteUser │  │              │                       │
+│   └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                       │
+│          │                 │                 │                               │
+│          ▼                 ▼                 ▼                               │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                       │
+│   │  Services    │  │  Services    │  │  Services    │                       │
+│   │ - registerUser│ │ - listUsers  │  │ - askAi      │                       │
+│   │ - loginUser   │ │ - updateRole │  │              │                       │
+│   └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                       │
+│          │                 │                 │                               │
+│          └─────────────────┴─────────────────┘                               │
+│                                │                                             │
+│                                ▼                                             │
+│                     ┌─────────────────────┐                                  │
+│                     │  User Model         │                                  │
+│                     │  (Mongoose)         │                                  │
+│                     └─────────┬───────────┘                                  │
+└───────────────────────────────┼──────────────────────────────────────────────┘
+                                │
+                                │ Database Queries
+                                │ findOne(), create(), find()
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              MONGODB DATABASE                               │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐    │
+│   │                         users Collection                           │    │
+│   │                                                                   │    │
+│   │   {                                                              │    │
+│   │     _id: ObjectId("65abcde123456789"),                            │    │
+│   │     name: "John Doe",                                             │    │
+│   │     email: "john@example.com",                                    │    │
+│   │     password: "$2a$10$N9qo8uLOickgx2ZMRZoMye...",                 │    │
+│   │     role: "admin",                                                │    │
+│   │     createdAt: ISODate("2024-01-09T10:30:00Z"),                   │    │
+│   │     updatedAt: ISODate("2024-01-09T10:30:00Z")                    │    │
+│   │   }                                                               │    │
+│   └─────────────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -127,7 +127,7 @@
        │
        ▼
 ┌─────────────────────┐
-│      api.js         │
+│     api.js          │
 │                     │
 │  Interceptor adds:  │
 │  - baseURL          │
@@ -148,43 +148,43 @@
        │ 4. Routes to /api/auth
        │
        ▼
-┌─────────────────────┐
-│   authRoutes.js     │
-│                     │
-│  POST /register     │
-│  Middleware chain:  │
+┌──────────────────────┐
+│   authRoutes.js      │
+│                      │
+│  POST /register      │
+│  Middleware chain:   │
 │  1. registerValidator│
-│  2. validateRequest │
-│  3. register        │
-└──────┬──────────────┘
+│  2. validateRequest  │
+│  3. register         │
+└──────┬───────────────┘
        │
        │ 5. Validation checks:
        │    - Email format valid?
        │    - Password ≥ 6 chars?
        │
        ▼
-┌─────────────────────┐
-│ authController.js   │
-│                     │
-│  register()         │
-│  - Extracts data    │
-│  - Calls service    │
-└──────┬──────────────┘
+┌──────────────────────┐
+│ authController.js    │
+│                      │
+│  register()          │
+│  - Extracts data     │
+│  - Calls service     │
+└──────┬───────────────┘
        │
        │ 6. registerUser({ name, email, password })
        │
        ▼
-┌─────────────────────┐
-│  authService.js     │
-│                     │
-│  1. Check if email  │
-│     exists          │
-│  2. Hash password   │
-│  3. Create user     │
-│  4. Generate token  │
-│  5. Return user +   │
-│     token           │
-└──────┬──────────────┘
+┌──────────────────────┐
+│  authService.js      │
+│                      │
+│  1. Check if email   │
+│     exists           │
+│  2. Hash password    │
+│  3. Create user      │
+│  4. Generate token   │
+│  5. Return user +    │
+│     token            │
+└──────┬───────────────┘
        │
        │ 7. Database operations:
        │    - User.findOne({ email })
@@ -193,17 +193,17 @@
        │    - generateToken(userId)
        │
        ▼
-┌─────────────────────┐
-│     MongoDB         │
-│                     │
-│  Insert new user:   │
-│  {                  │
-│    name: "John",    │
-│    email: "...",    │
+┌──────────────────────┐
+│     MongoDB          │
+│                      │
+│  Insert new user:    │
+│  {                   │
+│    name: "John",     │
+│    email: "...",     │
 │    password: "$2a$10$...",  (hashed!)
-│    role: "user"     │
-│  }                  │
-└──────┬──────────────┘
+│    role: "user"      │
+│  }                   │
+└──────┬───────────────┘
        │
        │ 8. Response: { success: true, user: {...}, token: "..." }
        │
@@ -221,13 +221,13 @@
        │    Redirect to Dashboard
        │
        ▼
-┌─────────────────────┐
-│    Dashboard.jsx     │
-│                     │
-│  ProtectedRoute     │
-│  checks token → OK  │
-│  Renders dashboard  │
-└─────────────────────┘
+┌──────────────────────┐
+│   Dashboard.jsx      │
+│                      │
+│  ProtectedRoute      │
+│  checks token → OK   │
+│  Renders dashboard   │
+└──────────────────────┘
 ```
 
 ---
@@ -243,10 +243,10 @@
        │
        ▼
 ┌─────────────────────┐
-│    Login.jsx        │
+│   Login.jsx         │
 │                     │
 │  handleSubmit()     │
-│  api.post('/api/auth/login', { email, password })
+│  api.post('/api/auth/login', { email, password }) │
 └──────┬──────────────┘
        │
        │ HTTP POST /api/auth/login
@@ -290,28 +290,28 @@
        │ → true (match!)
        │
        ▼
-┌─────────────────────┐
-│     Response        │
-│                     │
-│  {                  │
-│    success: true,   │
-│    user: {          │
-│      id: "...",     │
-│      name: "John",  │
-│      email: "...",  │
-│      role: "user"   │
-│    },               │
-│    token: "eyJ..."  │
-│  }                  │
-└──────┬──────────────┘
+┌──────────────────────┐
+│     Response         │
+│                      │
+│  {                   │
+│    success: true,    │
+│    user: {           │
+│      id: "...",      │
+│      name: "John",   │
+│      email: "...",   │
+│      role: "user"    │
+│    },                │
+│    token: "eyJ..."   │
+│  }                   │
+└──────┬───────────────┘
        │
        ▼
-┌─────────────────────┐
-│    Login.jsx        │
-│                     │
-│  login(token, user) │
-│  navigate('/')      │
-└─────────────────────┘
+┌──────────────────────┐
+│    Login.jsx         │
+│                      │
+│  login(token, user)  │
+│  navigate('/')       │
+└──────────────────────┘
 ```
 
 ---
@@ -326,29 +326,29 @@
 └──────┬──────┘
        │
        ▼
-┌─────────────────────┐
-│    App.jsx          │
-│                     │
-│  <Route             │
-│    path="/admin"    │
-│    element={        │
-│      <ProtectedRoute│
-│        requireRole= │
-│        "admin">     │
-│        <Admin />    │
+┌──────────────────────┐
+│    App.jsx           │
+│                      │
+│  <Route              │
+│    path="/admin"     │
+│    element={         │
+│      <ProtectedRoute │
+│        requireRole=  │
+│        "admin">      │
+│        <Admin />     │
 │      </ProtectedRoute│
-│    }                │
-│  />                 │
-└──────┬──────────────┘
+│    }                 │
+│  />                  │
+└──────┬───────────────┘
        │
        ▼
-┌─────────────────────┐
-│ ProtectedRoute.jsx  │
-│                     │
-│  const { user,      │
+┌──────────────────────┐
+│ ProtectedRoute.jsx   │
+│                      │
+│  const { user,       │
 │          loading }   │
-│    = useAuth()      │
-└──────┬──────────────┘
+│    = useAuth()       │
+└──────┬───────────────┘
        │
        │ Check 1: Is loading?
        │
@@ -359,21 +359,21 @@
        │   ├─ NO → <Navigate to="/login" />
        │   │
        │   └─ YES → Check 3: Does user have required role?
-       │       │
-       │       ├─ NO → <Navigate to="/" />
-       │       │      (Regular user trying to access admin)
-       │       │
-       │       └─ YES → Render <Admin />
+       │         │
+       │         ├─ NO → <Navigate to="/" />
+       │         │      (Regular user trying to access admin)
+       │         │
+       │         └─ YES → Render <Admin />
        │                 (Admin user, all checks pass)
        │
        ▼
-┌─────────────────────┐
+┌──────────────────────┐
 │    Admin.jsx         │
-│                     │
-│  useEffect()        │
-│  - Fetches users    │
-│  - Renders UI       │
-└─────────────────────┘
+│                      │
+│  useEffect()         │
+│  - Fetches users     │
+│  - Renders UI        │
+└──────────────────────┘
 ```
 
 ---
@@ -387,126 +387,126 @@
 └──────┬──────┘
        │
        ▼
-┌─────────────────────┐
-│    Admin.jsx        │
-│                     │
-│  useEffect(() => {  │
-│    api.get('/api/users')│
-│  }, [])             │
-└──────┬──────────────┘
+┌──────────────────────┐
+│    Admin.jsx         │
+│                      │
+│  useEffect(() => {   │
+│    api.get('/api/users') │
+│  }, [])              │
+└──────┬───────────────┘
        │
        │ 1. api.get() called
        │
        ▼
-┌─────────────────────┐
-│      api.js         │
-│                     │
-│  Interceptor:       │
-│  1. Get token from  │
-│     localStorage    │
-│  2. Add to header:  │
-│     Authorization:  │
-│     Bearer <token>  │
-└──────┬──────────────┘
+┌──────────────────────┐
+│     api.js           │
+│                      │
+│  Interceptor:        │
+│  1. Get token from   │
+│     localStorage     │
+│  2. Add to header:   │
+│     Authorization:   │
+│     Bearer <token>   │
+└──────┬───────────────┘
        │
        │ 2. HTTP GET /api/users
        │    Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
        │
        ▼
-┌─────────────────────┐
-│    server.js        │
-│                     │
-│  Express receives   │
-│  request            │
-└──────┬──────────────┘
+┌──────────────────────┐
+│   server.js          │
+│                      │
+│  Express receives    │
+│  request             │
+└──────┬───────────────┘
        │
        │ 3. Routes to /api/users
        │
        ▼
-┌─────────────────────┐
-│   userRoutes.js     │
-│                     │
-│  GET /              │
-│  Middleware:        │
-│  1. authenticate    │
-│  2. authorizeRole('admin')│
-│  3. getAllUsers     │
-└──────┬──────────────┘
+┌──────────────────────┐
+│   userRoutes.js      │
+│                      │
+│  GET /               │
+│  Middleware:         │
+│  1. authenticate     │
+│  2. authorizeRole('admin') │
+│  3. getAllUsers      │
+└──────┬───────────────┘
        │
        │ 4. authenticate middleware
        │
        ▼
-┌─────────────────────┐
-│ authMiddleware.js   │
-│                     │
-│  1. Extract token  │
-│     from header     │
-│  2. jwt.verify()    │
-│     - Decode token  │
+┌──────────────────────┐
+│ authMiddleware.js    │
+│                      │
+│  1. Extract token    │
+│     from header      │
+│  2. jwt.verify()     │
+│     - Decode token   │
 │     - Check signature│
-│     - Check expiry  │
-│  3. Find user by ID │
-│  4. Attach to req.user│
-└──────┬──────────────┘
+│     - Check expiry   │
+│  3. Find user by ID  │
+│  4. Attach to req.user │
+└──────┬───────────────┘
        │
        │ 5. authorizeRole('admin')
        │
        ▼
-┌─────────────────────┐
-│ authMiddleware.js   │
-│                     │
-│  Check:             │
-│  req.user.role === 'admin'│
-│                     │
-│  YES → Continue     │
-│  NO → 403 Forbidden│
-└──────┬──────────────┘
+┌──────────────────────┐
+│ authMiddleware.js    │
+│                      │
+│  Check:              │
+│  req.user.role === 'admin' │
+│                      │
+│  YES → Continue      │
+│  NO  → 403 Forbidden │
+└──────┬───────────────┘
        │
        │ 6. getAllUsers() controller
        │
        ▼
-┌─────────────────────┐
-│ userController.js   │
-│                     │
-│  getAllUsers()      │
-│  Calls listUsers()  │
-└──────┬──────────────┘
+┌──────────────────────┐
+│ userController.js    │
+│                      │
+│  getAllUsers()       │
+│  Calls listUsers()   │
+└──────┬───────────────┘
        │
        │ 7. listUsers() service
        │
        ▼
-┌─────────────────────┐
-│  userService.js     │
-│                     │
-│  User.find()        │
+┌──────────────────────┐
+│  userService.js      │
+│                      │
+│  User.find()         │
 │  .select('-password')│
-│  Returns all users  │
-└──────┬──────────────┘
+│  Returns all users   │
+└──────┬───────────────┘
        │
        │ 8. Database Query:
        │    SELECT * FROM users
        │    (excluding passwords)
        │
        ▼
-┌─────────────────────┐
-│     MongoDB         │
-│                     │
-│  Returns:           │
-│  [                  │
-│    { id: "...", name: "John", ... },│
-│    { id: "...", name: "Jane", ... } │
-│  ]                  │
-└──────┬──────────────┘
+┌──────────────────────┐
+│     MongoDB          │
+│                      │
+│  Returns:            │
+│  [                   │
+│    { id: "...", name: "John", ... }, │
+│    { id: "...", name: "Jane", ... }  │
+│  ]                   │
+└──────┬───────────────┘
        │
        │ 9. Response: { success: true, users: [...] }
        │
        ▼
-┌─────────────────────┐
-│    Admin.jsx        │
-│                     │
+┌──────────────────────┐
+│    Admin.jsx         │
+│                      │
 │  setUsers(data.users)│
-│  Renders user list  │
-└─────────────────────┘
+│  Renders user list   │
+└──────────────────────┘
 ```
 
 ---
@@ -578,44 +578,44 @@ App.jsx
 ## 7. State Management Flow
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              AuthContext (Global State)                  │
-│                                                          │
-│  State Variables:                                        │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ user: { id, name, email, role } | null          │  │
-│  │ loading: true | false                           │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                          │
-│  Functions:                                              │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ login(token, userData)                            │  │
-│  │   - localStorage.setItem('token', token)           │  │
-│  │   - setUser(userData)                            │  │
-│  │                                                    │  │
-│  │ logout()                                           │  │
-│  │   - localStorage.removeItem('token')              │  │
-│  │   - setUser(null)                                 │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                AuthContext (Global State)                    │
+│                                                              │
+│  State Variables:                                            │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ user: { id, name, email, role } | null               │ │
+│   │ loading: true | false                                │ │
+│   └───────────────────────────────────────────────────────┘ │
+│                                                              │
+│  Functions:                                                  │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ login(token, userData)                               │ │
+│   │   - localStorage.setItem('token', token)             │ │
+│   │   - setUser(userData)                                │ │
+│   │                                                     │ │
+│   │ logout()                                            │ │
+│   │   - localStorage.removeItem('token')                │ │
+│   │   - setUser(null)                                   │ │
+│   └───────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
                           │
                           │ Provides to all children
                           │
         ┌─────────────────┼─────────────────┐
         │                 │                 │
         ▼                 ▼                 ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  Login.jsx   │  │  NavBar.jsx  │  │  Admin.jsx   │
-│              │  │              │  │              │
-│  const {     │  │  const {     │  │  const {     │
-│    login     │  │    user,     │  │    user      │
-│  } = useAuth()│  │    logout   │  │  } = useAuth()│
-│              │  │  } = useAuth()│  │              │
-│              │  │              │  │              │
-│  Calls:      │  │  Displays:   │  │  Uses:       │
-│  login(token,│  │  - user.name │  │  - user.role │
-│   user)      │  │  - Logout btn│  │    (check)   │
-└──────────────┘  └──────────────┘  └──────────────┘
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│  Login.jsx   │   │  NavBar.jsx  │   │  Admin.jsx   │
+│              │   │              │   │              │
+│  const {     │   │  const {     │   │  const {     │
+│    login     │   │    user,     │   │    user      │
+│  } = useAuth()│  │    logout    │   │  } = useAuth()│
+│              │   │  } = useAuth()│  │              │
+│              │   │              │   │              │
+│  Calls:      │   │  Displays:   │   │  Uses:       │
+│  login(token,│   │  - user.name │   │  - user.role │
+│   user)      │   │  - Logout btn│   │    (check)   │
+└──────────────┘   └──────────────┘   └──────────────┘
 ```
 
 ---
@@ -635,8 +635,8 @@ HTTP Request Arrives
             ▼
 ┌───────────────────────┐
 │  2. express.json()    │
-│     - Parse JSON body  │
-│     - Attach to req.body│
+│     - Parse JSON body │
+│     - Attach to req.body │
 └───────────┬───────────┘
             │
             ▼
@@ -651,14 +651,14 @@ HTTP Request Arrives
 ┌───────────────────────┐
 │  Route Middleware     │
 │  (e.g., /api/users)   │
-│                        │
+│                       │
 │  3a. authenticate     │
 │      - Verify token   │
 │      - Attach user    │
-│                        │
+│                       │
 │  3b. authorizeRole    │
 │      - Check role     │
-│                        │
+│                       │
 │  3c. Controller       │
 │      - Handle request │
 └───────────┬───────────┘
@@ -680,10 +680,10 @@ HTTP Request Arrives
 ## 9. Database Schema Visualization
 
 ```
-┌─────────────────────────────────────┐
-│         users Collection             │
-│      (MongoDB Document Store)       │
-└─────────────────────────────────────┘
+┌────────────────────────────────────────────┐
+│            users Collection                │
+│         (MongoDB Document Store)           │
+└────────────────────────────────────────────┘
                     │
         ┌───────────┼───────────┐
         │           │           │
@@ -701,7 +701,7 @@ HTTP Request Arrives
 │   "john@"   │ │   "jane@"   │ │   "admin@"  │
 │             │ │             │ │             │
 │ password:   │ │ password:   │ │ password:   │
-│   "$2a$10$"│ │   "$2a$10$"│ │   "$2a$10$"│
+│   "$2a$10$" │ │   "$2a$10$" │ │   "$2a$10$" │
 │   (hashed)  │ │   (hashed)  │ │   (hashed)  │
 │             │ │             │ │             │
 │ role:       │ │ role:       │ │ role:       │
@@ -720,27 +720,27 @@ HTTP Request Arrives
 ## 10. JWT Token Structure
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    JWT Token                            │
-│  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YWJj│
-│  ZGUxMjM0NTY3ODkiLCJpYXQiOjE3MDEyMzQ1Njd9.xyz123...   │
-└─────────────────────────────────────────────────────────┘
-         │                    │                    │
-         │                    │                    │
-         ▼                    ▼                    ▼
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Header     │    │   Payload    │    │  Signature   │
-│              │    │              │    │              │
-│ {            │    │ {            │    │ HMAC SHA256  │
-│   "alg":     │    │   "id":      │    │ (header +    │
-│   "HS256",   │    │   "65abcde", │    │  payload +    │
-│   "typ":     │    │   "iat":     │    │  secret)     │
-│   "JWT"      │    │   1701234567 │    │              │
-│ }            │    │ }            │    │              │
-│              │    │              │    │              │
-│ Base64       │    │ Base64       │    │ Base64       │
-│ Encoded      │    │ Encoded      │    │ Encoded      │
-└──────────────┘    └──────────────┘    └──────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                         JWT Token                            │
+│ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YWJjZG      │
+│ UxMjM0NTY3ODkiLCJpYXQiOjE3MDEyMzQ1Njd9.xyz123...             │
+└───────────────────────────────────────────────────────────────┘
+         │                   │                   │
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│   Header     │   │   Payload    │   │  Signature   │
+│              │   │              │   │              │
+│ {            │   │ {            │   │ HMAC SHA256  │
+│   "alg":     │   │   "id":      │   │ (header +    │
+│   "HS256",   │   │   "65abcde", │   │  payload +   │
+│   "typ":     │   │   "iat":     │   │  secret)     │
+│   "JWT"      │   │   1701234567 │   │              │
+│ }            │   │ }            │   │              │
+│              │   │              │   │              │
+│ Base64       │   │ Base64       │   │ Base64       │
+│ Encoded      │   │ Encoded      │   │ Encoded      │
+└──────────────┘   └──────────────┘   └──────────────┘
 ```
 
 **Decoded Payload Example:**
@@ -757,9 +757,9 @@ HTTP Request Arrives
 ## 11. Password Hashing Process
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              Registration (Password Hashing)            │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│              Registration (Password Hashing)                 │
+└───────────────────────────────────────────────────────────────┘
 
 User Input: "secret123"
         │
@@ -787,9 +787,9 @@ Stored in Database:
             │ (One-way: Cannot reverse!)
             │
             ▼
-┌─────────────────────────────────────────────────────────┐
-│              Login (Password Verification)               │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│              Login (Password Verification)                    │
+└───────────────────────────────────────────────────────────────┘
 
 User Input: "secret123"
         │
@@ -818,9 +818,9 @@ User Input: "secret123"
 ## 12. Error Handling Flow
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Request Flow                         │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                        Request Flow                          │
+└───────────────────────────────────────────────────────────────┘
 
 Controller throws error:
   throw new Error('User not found');

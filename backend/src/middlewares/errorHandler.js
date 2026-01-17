@@ -4,7 +4,7 @@ function errorHandler(err, req, res, next) {
   console.error('Error stack:', err.stack);
   console.error('Request URL:', req.originalUrl);
   console.error('Request method:', req.method);
-  
+
   const status = err.status || 500;
   res.status(status).json({
     success: false,

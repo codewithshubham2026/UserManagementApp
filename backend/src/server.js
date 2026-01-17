@@ -19,6 +19,7 @@ app.use(cors({
   exposedHeaders: ['Content-Type'],
   optionsSuccessStatus: 204
 }));
+
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
