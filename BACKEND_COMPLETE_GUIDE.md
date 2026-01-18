@@ -1356,4 +1356,469 @@ Authorization: Bearer <token>
 
 ---
 
+## Deployment Guide: Render (Backend) + Vercel (Frontend)
+
+This section provides step-by-step instructions to deploy your backend on Render and frontend on Vercel.
+
+---
+
+### Prerequisites
+
+1. **GitHub Account**: Your code should be pushed to a GitHub repository
+2. **MongoDB Atlas Account**: Free tier available at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+3. **Render Account**: Sign up at [render.com](https://render.com) (free tier available)
+4. **Vercel Account**: Sign up at [vercel.com](https://vercel.com) (free tier available)
+
+---
+
+## Part 1: MongoDB Atlas Setup (Database)
+
+### Step 1: Create MongoDB Atlas Cluster
+
+1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Sign up or log in
+3. Click **"Create"** or **"Build a Database"**
+4. Choose **FREE (M0)** tier
+5. Select a cloud provider and region (choose closest to your deployment)
+6. Click **"Create Cluster"** (takes 3-5 minutes)
+
+### Step 2: Create Database User
+
+1. Go to **Database Access** (left sidebar)
+2. Click **"Add New Database User"**
+3. Choose **"Password"** authentication
+4. Enter username and password (save these!)
+5. Set privileges to **"Atlas Admin"** or **"Read and write to any database"**
+6. Click **"Add User"**
+
+### Step 3: Whitelist IP Addresses
+
+1. Go to **Network Access** (left sidebar)
+2. Click **"Add IP Address"**
+3. For development: Click **"Allow Access from Anywhere"** (adds `0.0.0.0/0`)
+   - ⚠️ **Note**: For production, use specific IPs only
+4. Click **"Confirm"**
+
+### Step 4: Get Connection String
+
+1. Go to **Database** (left sidebar)
+2. Click **"Connect"** on your cluster
+3. Choose **"Connect your application"**
+4. Copy the connection string
+   - Format: `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
+5. Replace `<username>` and `<password>` with your database user credentials
+6. Add database name at the end: `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/user_management?retryWrites=true&w=majority`
+7. **Save this connection string** - you'll need it for Render
+
+---
+
+## Part 2: Deploy Backend on Render
+
+### Step 1: Prepare Your Repository
+
+1. Ensure your code is pushed to GitHub
+2. Make sure `backend/` folder contains all necessary files
+3. Verify `package.json` has a `start` script: `"start": "node src/server.js"`
+
+### Step 2: Create New Web Service on Render
+
+1. Log in to [Render Dashboard](https://dashboard.render.com)
+2. Click **"New +"** → **"Web Service"**
+3. Connect your GitHub account if not already connected
+4. Select your repository
+5. Configure the service:
+   - **Name**: `user-management-backend` (or your preferred name)
+   - **Region**: Choose closest to your users
+   - **Branch**: `main` (or your default branch)
+   - **Root Directory**: `backend` ⚠️ **Important!**
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Plan**: Free (or paid if you prefer)
+
+### Step 3: Configure Environment Variables on Render
+
+Click **"Environment"** tab and add these variables:
+
+| Variable Name | Value | Description |
+|--------------|-------|-------------|
+| `PORT` | `10000` | Render assigns port automatically, but you can set this |
+| `MONGO_URI` | `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/user_management?retryWrites=true&w=majority` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | `your-super-secret-jwt-key-change-this-in-production` | Strong random string (use a password generator) |
+| `CLIENT_ORIGIN` | `https://your-frontend-app.vercel.app` | ⚠️ **Update after deploying frontend** |
+| `ADMIN_EMAIL` | `admin@example.com` | Default admin email (optional) |
+| `ADMIN_PASSWORD` | `admin123` | Default admin password (optional, change in production) |
+| `ADMIN_NAME` | `Admin User` | Default admin name (optional) |
+| `GEMINI_API_KEY` | `your-gemini-key` | Optional - for AI features |
+| `CHATGPT_API_KEY` | `your-chatgpt-key` | Optional - for AI features |
+| `NODE_ENV` | `production` | Set to production |
+
+**Important Notes**:
+- ⚠️ **CLIENT_ORIGIN**: Initially set to a placeholder. After deploying frontend on Vercel, come back and update this with your Vercel URL.
+- 🔒 **JWT_SECRET**: Generate a strong random string (at least 32 characters). You can use: `openssl rand -base64 32` or an online generator.
+
+### Step 4: Deploy
+
+1. Click **"Create Web Service"**
+2. Render will start building and deploying
+3. Wait for deployment to complete (usually 2-5 minutes)
+4. Once deployed, you'll see a URL like: `https://user-management-backend.onrender.com`
+5. **Copy this URL** - you'll need it for frontend configuration
+
+### Step 5: Test Backend Deployment
+
+1. Open: `https://your-backend-url.onrender.com/api/health`
+2. You should see: `{ "success": true, "message": "API is healthy" }`
+3. If you see an error, check Render logs for issues
+
+### Step 6: Update CLIENT_ORIGIN (After Frontend Deployment)
+
+1. Go back to Render dashboard
+2. Navigate to your service → **Environment** tab
+3. Update `CLIENT_ORIGIN` with your Vercel frontend URL:
+   ```
+   https://your-frontend-app.vercel.app
+   ```
+4. Click **"Save Changes"**
+5. Render will automatically redeploy with new environment variable
+
+---
+
+## Part 3: Deploy Frontend on Vercel
+
+### Step 1: Prepare Frontend
+
+1. Ensure your code is pushed to GitHub
+2. Make sure `frontend/` folder contains all necessary files
+3. Verify `package.json` has a `build` script: `"build": "vite build"`
+
+### Step 2: Create New Project on Vercel
+
+1. Log in to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click **"Add New..."** → **"Project"**
+3. Import your GitHub repository
+4. Configure the project:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `frontend` ⚠️ **Important!**
+   - **Build Command**: `npm run build` (auto-detected)
+   - **Output Directory**: `dist` (auto-detected)
+   - **Install Command**: `npm install`
+
+### Step 3: Configure Environment Variables on Vercel
+
+Before deploying, add environment variable:
+
+1. In project settings, go to **"Environment Variables"**
+2. Add:
+   - **Name**: `VITE_API_BASE`
+   - **Value**: `https://your-backend-url.onrender.com`
+     - Replace `your-backend-url.onrender.com` with your actual Render backend URL
+   - **Environment**: Select all (Production, Preview, Development)
+
+**Example**:
+```
+VITE_API_BASE=https://user-management-backend.onrender.com
+```
+
+**Important**: 
+- ⚠️ **No trailing slash** in the URL
+- ⚠️ **Use HTTPS** (Render provides HTTPS by default)
+- ⚠️ **Don't include `/api`** - the frontend code adds that automatically
+
+### Step 4: Deploy
+
+1. Click **"Deploy"**
+2. Vercel will build and deploy your frontend
+3. Wait for deployment to complete (usually 1-3 minutes)
+4. Once deployed, you'll see a URL like: `https://your-frontend-app.vercel.app`
+5. **Copy this URL**
+
+### Step 5: Update Backend CLIENT_ORIGIN
+
+1. Go back to Render dashboard
+2. Navigate to your backend service → **Environment** tab
+3. Update `CLIENT_ORIGIN` with your Vercel frontend URL:
+   ```
+   https://your-frontend-app.vercel.app
+   ```
+4. Click **"Save Changes"**
+5. Wait for Render to redeploy (automatic)
+
+### Step 6: Test Full Application
+
+1. Open your Vercel frontend URL
+2. Try registering a new user
+3. Try logging in
+4. If you're admin, test admin features
+5. Check browser console for any errors
+
+---
+
+## Environment Variables Summary
+
+### Backend (Render) Environment Variables
+
+```env
+PORT=10000
+MONGO_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/user_management?retryWrites=true&w=majority
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
+CLIENT_ORIGIN=https://your-frontend-app.vercel.app
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+ADMIN_NAME=Admin User
+GEMINI_API_KEY=your-gemini-api-key-here
+CHATGPT_API_KEY=your-chatgpt-api-key-here
+NODE_ENV=production
+```
+
+### Frontend (Vercel) Environment Variables
+
+```env
+VITE_API_BASE=https://your-backend-url.onrender.com
+```
+
+**Important**: 
+- Frontend variables must start with `VITE_` to be accessible in the code
+- After adding variables, Vercel will automatically rebuild
+
+---
+
+## Common Deployment Issues & Solutions
+
+### Issue 1: CORS Errors
+
+**Symptoms**: Frontend can't connect to backend, CORS errors in console
+
+**Solution**:
+1. Check `CLIENT_ORIGIN` in Render matches your Vercel URL exactly
+2. Ensure no trailing slash: `https://app.vercel.app` (not `https://app.vercel.app/`)
+3. Ensure using HTTPS (not HTTP)
+4. Redeploy backend after updating `CLIENT_ORIGIN`
+
+### Issue 2: Backend Not Starting
+
+**Symptoms**: Render shows "Deploy failed" or service won't start
+
+**Solution**:
+1. Check Render logs for error messages
+2. Verify `MONGO_URI` is correct and includes database name
+3. Verify MongoDB Atlas IP whitelist includes `0.0.0.0/0` (or Render's IPs)
+4. Check `package.json` has correct `start` script
+5. Verify root directory is set to `backend` in Render settings
+
+### Issue 3: Frontend Can't Connect to Backend
+
+**Symptoms**: Network errors, "Cannot connect to server"
+
+**Solution**:
+1. Verify `VITE_API_BASE` in Vercel matches your Render backend URL
+2. Test backend health endpoint: `https://your-backend.onrender.com/api/health`
+3. Check backend is running (not sleeping - free tier sleeps after inactivity)
+4. Ensure no trailing slash in `VITE_API_BASE`
+5. Rebuild frontend after updating environment variables
+
+### Issue 4: MongoDB Connection Failed
+
+**Symptoms**: Backend logs show MongoDB connection errors
+
+**Solution**:
+1. Verify `MONGO_URI` format is correct
+2. Check username and password are URL-encoded (replace special characters)
+3. Verify database user has correct permissions
+4. Check IP whitelist in MongoDB Atlas includes all IPs (`0.0.0.0/0`)
+5. Ensure database name is included in connection string
+
+### Issue 5: Environment Variables Not Working
+
+**Symptoms**: Frontend still using localhost, backend using wrong values
+
+**Solution**:
+1. **Frontend**: Variables must start with `VITE_` prefix
+2. **Backend**: Ensure variables are set in Render Environment tab
+3. After updating variables, services need to rebuild:
+   - **Vercel**: Automatic rebuild on variable change
+   - **Render**: Click "Manual Deploy" → "Clear build cache & deploy"
+4. Clear browser cache and hard refresh (Ctrl+Shift+R)
+
+### Issue 6: Free Tier Limitations
+
+**Render Free Tier**:
+- Services sleep after 15 minutes of inactivity
+- First request after sleep takes 30-60 seconds (cold start)
+- Solution: Use a paid plan or set up a ping service to keep it awake
+
+**Vercel Free Tier**:
+- Generous limits, usually no issues
+- Automatic HTTPS
+- Global CDN
+
+---
+
+## Step-by-Step Checklist
+
+### Pre-Deployment
+- [ ] Code pushed to GitHub
+- [ ] MongoDB Atlas cluster created
+- [ ] MongoDB database user created
+- [ ] MongoDB IP whitelist configured
+- [ ] MongoDB connection string ready
+- [ ] Strong JWT_SECRET generated
+
+### Backend Deployment (Render)
+- [ ] Render account created
+- [ ] New Web Service created
+- [ ] Root directory set to `backend`
+- [ ] Build command: `npm install`
+- [ ] Start command: `npm start`
+- [ ] All environment variables added
+- [ ] Deployment successful
+- [ ] Health check endpoint working
+- [ ] Backend URL copied
+
+### Frontend Deployment (Vercel)
+- [ ] Vercel account created
+- [ ] New project created
+- [ ] Root directory set to `frontend`
+- [ ] `VITE_API_BASE` environment variable added
+- [ ] Deployment successful
+- [ ] Frontend URL copied
+
+### Post-Deployment
+- [ ] Backend `CLIENT_ORIGIN` updated with Vercel URL
+- [ ] Backend redeployed with new `CLIENT_ORIGIN`
+- [ ] Frontend tested - registration works
+- [ ] Frontend tested - login works
+- [ ] Admin features tested (if applicable)
+- [ ] No CORS errors in browser console
+- [ ] All API calls working
+
+---
+
+## URL Configuration Flow
+
+```
+1. Deploy Backend on Render
+   ↓
+   Get: https://backend-name.onrender.com
+   ↓
+2. Deploy Frontend on Vercel
+   ↓
+   Get: https://frontend-name.vercel.app
+   ↓
+3. Update Backend CLIENT_ORIGIN
+   CLIENT_ORIGIN=https://frontend-name.vercel.app
+   ↓
+4. Update Frontend VITE_API_BASE
+   VITE_API_BASE=https://backend-name.onrender.com
+   ↓
+5. Test Application
+```
+
+---
+
+## Production Best Practices
+
+### Security
+1. **JWT_SECRET**: Use a strong, random string (32+ characters)
+2. **MongoDB Password**: Use a strong password
+3. **Admin Password**: Change default admin password after first login
+4. **IP Whitelist**: For production, restrict MongoDB Atlas to specific IPs
+5. **HTTPS**: Always use HTTPS (both Render and Vercel provide this)
+
+### Performance
+1. **Database Indexing**: Add indexes for frequently queried fields
+2. **Caching**: Consider adding Redis for session management
+3. **CDN**: Vercel automatically provides CDN for frontend
+4. **Monitoring**: Set up error tracking (e.g., Sentry)
+
+### Monitoring
+1. **Render Logs**: Monitor backend logs in Render dashboard
+2. **Vercel Analytics**: Enable Vercel Analytics for frontend
+3. **Health Checks**: Set up uptime monitoring for your API
+4. **Error Tracking**: Integrate error tracking service
+
+---
+
+## Quick Reference: Environment Variables
+
+### Backend (Render)
+```bash
+# Required
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
+JWT_SECRET=your-secret-key-here
+CLIENT_ORIGIN=https://your-frontend.vercel.app
+
+# Optional
+PORT=10000
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+GEMINI_API_KEY=your-key
+CHATGPT_API_KEY=your-key
+NODE_ENV=production
+```
+
+### Frontend (Vercel)
+```bash
+# Required
+VITE_API_BASE=https://your-backend.onrender.com
+```
+
+---
+
+## Testing After Deployment
+
+### 1. Backend Health Check
+```
+GET https://your-backend.onrender.com/api/health
+Expected: { "success": true, "message": "API is healthy" }
+```
+
+### 2. Frontend Connection Test
+1. Open browser console
+2. Navigate to your Vercel frontend URL
+3. Check for any CORS or network errors
+4. Try registering a new user
+
+### 3. Full Flow Test
+1. Register new user → Should work
+2. Login → Should work
+3. Access protected routes → Should work
+4. Admin features (if admin) → Should work
+
+---
+
+## Troubleshooting Commands
+
+### Check Backend Logs (Render)
+1. Go to Render dashboard
+2. Click on your service
+3. Click "Logs" tab
+4. Check for errors
+
+### Check Frontend Logs (Vercel)
+1. Go to Vercel dashboard
+2. Click on your project
+3. Click on deployment
+4. Check "Build Logs" or "Function Logs"
+
+### Test Backend Manually
+```bash
+# Health check
+curl https://your-backend.onrender.com/api/health
+
+# Test with Postman
+# Use the deployed URL instead of localhost:5000
+```
+
+---
+
+## Additional Resources
+
+- **Render Documentation**: [render.com/docs](https://render.com/docs)
+- **Vercel Documentation**: [vercel.com/docs](https://vercel.com/docs)
+- **MongoDB Atlas Documentation**: [docs.atlas.mongodb.com](https://docs.atlas.mongodb.com)
+- **Vite Environment Variables**: [vitejs.dev/guide/env-and-mode.html](https://vitejs.dev/guide/env-and-mode.html)
+
+---
+
 **End of Document**
